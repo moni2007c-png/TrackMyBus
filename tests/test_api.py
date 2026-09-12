@@ -20,7 +20,7 @@ def test_add_bus(client):
     response = client.post(
         "/api/buses",
         json={
-            "bus_number": "500",
+            "bus_number": "TEST-500",
             "route": "Chennai Central - Tambaram",
             "location": "Guindy",
             "status": "On Time"
