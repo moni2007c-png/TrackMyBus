@@ -1,11 +1,16 @@
 document.getElementById("searchButton").addEventListener("click", async function () {
 
-    const busNumber = document.getElementById("busNumber").value;
+    const busNumber = document.getElementById("busNumber").value.trim();
+    const busResult = document.getElementById("busResult");
 
+    // Empty input
     if (busNumber === "") {
-        alert("Please enter a bus number");
+        busResult.innerHTML = "<p>Please enter a bus number.</p>";
         return;
     }
+
+    // Show loading message
+    busResult.innerHTML = "<p>Searching for bus...</p>";
 
     try {
         const response = await fetch(
@@ -15,20 +20,130 @@ document.getElementById("searchButton").addEventListener("click", async function
         const data = await response.json();
 
         if (response.ok) {
-            alert(
-                "Bus: " + data.bus_number +
-                "\nRoute: " + data.route +
-                "\nLocation: " + data.location +
-                "\nStatus: " + data.status
-            );
+
+            busResult.innerHTML = `
+                <h3>Bus Details</h3>
+                <p><strong>Bus Number:</strong> ${data.bus_number}</p>
+                <p><strong>Route:</strong> ${data.route}</p>
+                <p><strong>Location:</strong> ${data.location}</p>
+                <p><strong>Status:</strong> ${data.status}</p>
+            `;
+
         } else {
-            alert(data.error);
+
+            busResult.innerHTML = `
+                <p>❌ ${data.error || "Bus not found"}</p>
+            `;
         }
 
     } catch (error) {
-        alert("Unable to connect to the server");
+
+        console.error(error);
+
+        busResult.innerHTML = `
+            <p>❌ Unable to connect to the server.</p>
+        `;
+    }
+});    
+
+document.getElementById("updateLocationButton").addEventListener("click", async function () {
+
+    const busNumber = document.getElementById("updateBusNumber").value.trim();
+    const newLocation = document.getElementById("newLocation").value.trim();
+    const updateResult = document.getElementById("updateResult");
+
+    // Check empty fields
+    if (busNumber === "" || newLocation === "") {
+        updateResult.innerHTML = "<p>Please enter bus number and new location.</p>";
+        return;
+    }
+
+    // Show loading message
+    updateResult.innerHTML = "<p>Updating location...</p>";
+
+    try {
+        const response = await fetch(
+            `http://127.0.0.1:5000/api/buses/${busNumber}/location`,
+            {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    location: newLocation
+                })
+            }
+        );
+
+        const data = await response.json();
+
+        if (response.ok) {
+            updateResult.innerHTML =
+                `<p>✅ ${data.message}</p>`;
+        } else {
+            updateResult.innerHTML =
+                `<p>❌ ${data.error || "Unable to update location"}</p>`;
+        }
+
+    } catch (error) {
+
+        console.error(error);
+
+        updateResult.innerHTML =
+            "<p>❌ Unable to connect to the server.</p>";
     }
 });
 
+document.getElementById("addBusButton").addEventListener("click", async function () {
 
+    const busNumber = document.getElementById("addBusNumber").value.trim();
+    const route = document.getElementById("addRoute").value.trim();
+    const location = document.getElementById("addLocation").value.trim();
+    const status = document.getElementById("addStatus").value.trim();
+    const addResult = document.getElementById("addResult");
 
+    // Check empty fields
+    if (busNumber === "" || route === "" || location === "" || status === "") {
+        addResult.innerHTML = "<p>Please fill in all fields.</p>";
+        return;
+    }
+
+    // Show loading message
+    addResult.innerHTML = "<p>Adding bus...</p>";
+
+    try {
+        const response = await fetch(
+            "http://127.0.0.1:5000/api/buses",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    bus_number: busNumber,
+                    route: route,
+                    location: location,
+                    status: status
+                })
+            }
+        );
+
+        const data = await response.json();
+
+        if (response.ok) {
+            addResult.innerHTML =
+                `<p>✅ ${data.message}</p>`;
+
+        } else {
+            addResult.innerHTML =
+                `<p>❌ ${data.error || "Unable to add bus"}</p>`;
+        }
+
+    } catch (error) {
+
+        console.error(error);
+
+        addResult.innerHTML =
+            "<p>❌ Unable to connect to the server.</p>";
+    }
+});
