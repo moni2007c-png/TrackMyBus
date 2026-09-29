@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 import sqlite3
 
@@ -33,14 +33,11 @@ def init_db():
 
 @app.route("/")
 def home():
-    return jsonify({
-        "message": "TrackMyBus API is running"
-    })
+    return send_from_directory(".", "index.html")
 
 
 @app.route("/api/buses/<bus_number>", methods=["GET"])
 def get_bus(bus_number):
-
     conn = get_db()
 
     bus = conn.execute(
@@ -60,7 +57,6 @@ def get_bus(bus_number):
 
 @app.route("/api/buses", methods=["POST"])
 def add_bus():
-
     data = request.get_json()
 
     if not data:
@@ -81,16 +77,14 @@ def add_bus():
     conn = get_db()
 
     try:
-        conn.execute("""
+        conn.execute(
+            """
             INSERT INTO buses
             (bus_number, route, location, status)
             VALUES (?, ?, ?, ?)
-        """, (
-            bus_number,
-            route,
-            location,
-            status
-        ))
+            """,
+            (bus_number, route, location, status)
+        )
 
         conn.commit()
 
@@ -110,7 +104,6 @@ def add_bus():
 
 @app.route("/api/buses/<bus_number>/location", methods=["PUT"])
 def update_location(bus_number):
-
     data = request.get_json()
 
     if not data or "location" not in data:
