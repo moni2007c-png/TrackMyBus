@@ -8,11 +8,19 @@ CORS(app)
 DATABASE = "buses.db"
 
 
+# =========================
+# DATABASE CONNECTION
+# =========================
+
 def get_db():
     conn = sqlite3.connect(DATABASE)
     conn.row_factory = sqlite3.Row
     return conn
 
+
+# =========================
+# INITIALIZE DATABASE
+# =========================
 
 def init_db():
     conn = get_db()
@@ -31,13 +39,32 @@ def init_db():
     conn.close()
 
 
+# =========================
+# SERVE FRONTEND
+# =========================
+
 @app.route("/")
 def home():
     return send_from_directory(".", "index.html")
 
 
+@app.route("/script.js")
+def javascript():
+    return send_from_directory(".", "script.js")
+
+
+@app.route("/style.css")
+def stylesheet():
+    return send_from_directory(".", "style.css")
+
+
+# =========================
+# GET BUS
+# =========================
+
 @app.route("/api/buses/<bus_number>", methods=["GET"])
 def get_bus(bus_number):
+
     conn = get_db()
 
     bus = conn.execute(
@@ -55,8 +82,13 @@ def get_bus(bus_number):
     return jsonify(dict(bus))
 
 
+# =========================
+# ADD BUS
+# =========================
+
 @app.route("/api/buses", methods=["POST"])
 def add_bus():
+
     data = request.get_json()
 
     if not data:
@@ -77,18 +109,22 @@ def add_bus():
     conn = get_db()
 
     try:
-        conn.execute(
-            """
+
+        conn.execute("""
             INSERT INTO buses
             (bus_number, route, location, status)
             VALUES (?, ?, ?, ?)
-            """,
-            (bus_number, route, location, status)
-        )
+        """, (
+            bus_number,
+            route,
+            location,
+            status
+        ))
 
         conn.commit()
 
     except sqlite3.IntegrityError:
+
         conn.close()
 
         return jsonify({
@@ -102,8 +138,13 @@ def add_bus():
     }), 201
 
 
+# =========================
+# UPDATE BUS LOCATION
+# =========================
+
 @app.route("/api/buses/<bus_number>/location", methods=["PUT"])
 def update_location(bus_number):
+
     data = request.get_json()
 
     if not data or "location" not in data:
@@ -119,12 +160,16 @@ def update_location(bus_number):
         SET location = ?
         WHERE bus_number = ?
         """,
-        (data["location"], bus_number)
+        (
+            data["location"],
+            bus_number
+        )
     )
 
     conn.commit()
 
     if cursor.rowcount == 0:
+
         conn.close()
 
         return jsonify({
@@ -138,6 +183,15 @@ def update_location(bus_number):
     })
 
 
+# =========================
+# START APPLICATION
+# =========================
+
 if __name__ == "__main__":
     init_db()
-    app.run(debug=True)
+
+    app.run(
+        host="0.0.0.0",
+        port=5000,
+        debug=True
+    )
