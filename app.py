@@ -8,9 +8,9 @@ CORS(app)
 DATABASE = "buses.db"
 
 
-# =========================
+# ======================================================
 # DATABASE CONNECTION
-# =========================
+# ======================================================
 
 def get_db():
     conn = sqlite3.connect(DATABASE)
@@ -18,9 +18,9 @@ def get_db():
     return conn
 
 
-# =========================
-# INITIALIZE DATABASE
-# =========================
+# ======================================================
+# CREATE DATABASE TABLE
+# ======================================================
 
 def init_db():
     conn = get_db()
@@ -35,18 +35,35 @@ def init_db():
         )
     """)
 
+    # Add GPS columns if they don't already exist
+    columns = conn.execute("PRAGMA table_info(buses)").fetchall()
+    column_names = [column["name"] for column in columns]
+
+    if "latitude" not in column_names:
+        conn.execute("ALTER TABLE buses ADD COLUMN latitude REAL")
+
+    if "longitude" not in column_names:
+        conn.execute("ALTER TABLE buses ADD COLUMN longitude REAL")
+
+    if "gps_updated_at" not in column_names:
+        conn.execute("ALTER TABLE buses ADD COLUMN gps_updated_at TEXT")
+
     conn.commit()
     conn.close()
 
 
-# =========================
-# SERVE FRONTEND
-# =========================
+# ======================================================
+# HOME PAGE
+# ======================================================
 
 @app.route("/")
 def home():
     return send_from_directory(".", "index.html")
 
+
+# ======================================================
+# FRONTEND FILES
+# ======================================================
 
 @app.route("/script.js")
 def javascript():
@@ -58,9 +75,30 @@ def stylesheet():
     return send_from_directory(".", "style.css")
 
 
-# =========================
-# GET BUS
-# =========================
+# ======================================================
+# GET ALL BUSES
+# ======================================================
+
+@app.route("/api/buses", methods=["GET"])
+def get_all_buses():
+
+    conn = get_db()
+
+    buses = conn.execute("""
+        SELECT *
+        FROM buses
+        ORDER BY id
+        LIMIT 15
+    """).fetchall()
+
+    conn.close()
+
+    return jsonify([dict(bus) for bus in buses])
+
+
+# ======================================================
+# GET SINGLE BUS
+# ======================================================
 
 @app.route("/api/buses/<bus_number>", methods=["GET"])
 def get_bus(bus_number):
@@ -68,7 +106,11 @@ def get_bus(bus_number):
     conn = get_db()
 
     bus = conn.execute(
-        "SELECT * FROM buses WHERE bus_number = ?",
+        """
+        SELECT *
+        FROM buses
+        WHERE bus_number = ?
+        """,
         (bus_number,)
     ).fetchone()
 
@@ -82,9 +124,9 @@ def get_bus(bus_number):
     return jsonify(dict(bus))
 
 
-# =========================
-# ADD BUS
-# =========================
+# ======================================================
+# ADD NEW BUS
+# ======================================================
 
 @app.route("/api/buses", methods=["POST"])
 def add_bus():
@@ -110,16 +152,19 @@ def add_bus():
 
     try:
 
-        conn.execute("""
+        conn.execute(
+            """
             INSERT INTO buses
             (bus_number, route, location, status)
             VALUES (?, ?, ?, ?)
-        """, (
-            bus_number,
-            route,
-            location,
-            status
-        ))
+            """,
+            (
+                bus_number,
+                route,
+                location,
+                status
+            )
+        )
 
         conn.commit()
 
@@ -138,9 +183,9 @@ def add_bus():
     }), 201
 
 
-# =========================
+# ======================================================
 # UPDATE BUS LOCATION
-# =========================
+# ======================================================
 
 @app.route("/api/buses/<bus_number>/location", methods=["PUT"])
 def update_location(bus_number):
@@ -148,6 +193,7 @@ def update_location(bus_number):
     data = request.get_json()
 
     if not data or "location" not in data:
+
         return jsonify({
             "error": "Location is required"
         }), 400
@@ -183,12 +229,73 @@ def update_location(bus_number):
     })
 
 
-# =========================
+# ======================================================
+# UPDATE GPS LOCATION
+# ======================================================
+
+@app.route("/api/buses/<bus_number>/gps", methods=["PUT"])
+def update_gps(bus_number):
+
+    data = request.get_json()
+
+    if not data:
+        return jsonify({
+            "error": "GPS data is required"
+        }), 400
+
+    latitude = data.get("latitude")
+    longitude = data.get("longitude")
+
+    if latitude is None or longitude is None:
+        return jsonify({
+            "error": "Latitude and longitude are required"
+        }), 400
+
+    conn = get_db()
+
+    cursor = conn.execute(
+        """
+        UPDATE buses
+        SET latitude = ?,
+            longitude = ?,
+            gps_updated_at = datetime('now')
+        WHERE bus_number = ?
+        """,
+        (
+            latitude,
+            longitude,
+            bus_number
+        )
+    )
+
+    conn.commit()
+
+    if cursor.rowcount == 0:
+
+        conn.close()
+
+        return jsonify({
+            "error": "Bus not found"
+        }), 404
+
+    conn.close()
+
+    return jsonify({
+        "message": "GPS location updated successfully",
+        "bus_number": bus_number,
+        "latitude": latitude,
+        "longitude": longitude
+    })
+
+
+# ======================================================
 # START APPLICATION
-# =========================
+# ======================================================
+
+init_db()
+
 
 if __name__ == "__main__":
-    init_db()
 
     app.run(
         host="0.0.0.0",

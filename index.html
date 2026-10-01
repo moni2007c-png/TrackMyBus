@@ -1,128 +1,583 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
     <title>TrackMyBus Public Transit</title>
+
     <link rel="stylesheet" href="style.css">
+
+    <link
+        rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    />
+
 </head>
 
 <body>
 
-    <header>
-        <h1>TrackMyBus</h1>
 
-        <nav>
-            <a href="#">Home</a>
-            <a href="#">Routes</a>
-            <a href="#">Live Tracking</a>
-            <a href="#">Login</a>
-        </nav>
-    </header>
+<!-- ==================================================
+     NAVIGATION
+================================================== -->
 
-    <main>
+<header>
 
-        <section class="hero">
-            <h2>Track Your Bus Easily</h2>
-            <p>Find bus routes and track buses in real time.</p>
+    <nav class="navbar">
 
-            <button>Track Bus</button>
-        </section>
+        <div class="logo">
+            TrackMyBus
+        </div>
 
-        <section class="search">
-            <h2>Search Bus</h2>
+        <ul class="nav-links">
 
-            <input 
-                type="text" 
+            <li>
+                <a href="#home"
+                   class="nav-link active">
+                    Home
+                </a>
+            </li>
+
+            <li>
+                <a href="#routes"
+                   class="nav-link">
+                    Routes
+                </a>
+            </li>
+
+            <li>
+                <a href="#live-tracking"
+                   class="nav-link">
+                    Live Tracking
+                </a>
+            </li>
+
+            <li>
+                <a href="#bus-status"
+                   class="nav-link">
+                    Bus Status
+                </a>
+            </li>
+
+            <li>
+                <a href="#login"
+                   class="nav-link">
+                    Login
+                </a>
+            </li>
+
+        </ul>
+
+    </nav>
+
+</header>
+
+
+<!-- ==================================================
+     HOME
+================================================== -->
+
+<section id="home"
+         class="hero">
+
+    <div class="hero-content">
+
+        <h1>
+            TrackMyBus Public Transit
+        </h1>
+
+        <p>
+            Track Bengaluru BMTC buses and check
+            their current status and location.
+        </p>
+
+        <button class="primary-btn"
+                onclick="showSection('routes')">
+
+            Explore Routes
+
+        </button>
+
+    </div>
+
+</section>
+
+
+<!-- ==================================================
+     SEARCH BUS
+================================================== -->
+
+<section class="section">
+
+    <div class="container">
+
+        <h2>
+            Search for a Bus
+        </h2>
+
+        <p>
+            Enter a bus number to view its details.
+        </p>
+
+        <div class="search-box">
+
+            <input
+                type="text"
                 id="busNumber"
-                placeholder="Enter bus number"
-            >
+                placeholder="Enter bus number">
 
-            <button id="searchButton">Search</button>
+            <button
+                id="searchButton"
+                class="primary-btn">
 
-            <div id="busResult"></div>
+                Search Bus
 
-            <hr>
+            </button>
 
-<h3>Update Bus Location</h3>
+        </div>
 
-<input
-    type="text"
-    id="updateBusNumber"
-    placeholder="Enter bus number"
->
+        <div id="busResult"
+             class="result-box">
+        </div>
 
-<input
-    type="text"
-    id="newLocation"
-    placeholder="Enter new location"
->
+    </div>
 
-<button id="updateLocationButton">Update Location</button>
+</section>
 
-<div id="updateResult"></div>
 
-<hr>
+<!-- ==================================================
+     ROUTES
+================================================== -->
 
-<h3>Add New Bus</h3>
+<section id="routes"
+         class="section">
 
-<input
-    type="text"
-    id="addBusNumber"
-    placeholder="Enter bus number"
->
+    <div class="container">
 
-<input
-    type="text"
-    id="addRoute"
-    placeholder="Enter route"
->
+        <h2>
+            Popular BMTC Routes
+        </h2>
 
-<input
-    type="text"
-    id="addLocation"
-    placeholder="Enter location"
->
+        <p>
+            Bengaluru public transit routes.
+        </p>
 
-<input
-    type="text"
-    id="addStatus"
-    placeholder="Enter status"
->
 
-<button id="addBusButton">Add Bus</button>
+        <div id="routesContainer"
+             class="route-grid">
 
-<div id="addResult"></div>
+            <p>
+                Loading routes...
+            </p>
 
-            <p id="searchResult"></p>
-        </section>
+        </div>
 
-        <section class="features">
+    </div>
 
-            <div class="card">
-                <h3>🚌 Bus Routes</h3>
-                <p>View available bus routes.</p>
+</section>
+
+
+<!-- ==================================================
+     LIVE TRACKING
+================================================== -->
+
+<section id="live-tracking"
+         class="section">
+
+    <div class="container">
+
+        <h2>
+            Live Bus Tracking
+        </h2>
+
+        <p>
+            Select a bus to view its latest location
+            and status.
+        </p>
+
+
+        <!-- BUS SELECT -->
+
+<div class="search-box">
+
+    <select id="trackingBusSelect">
+        <option value="">Select a bus</option>
+    </select>
+
+    <button
+        id="refreshTrackingButton"
+        class="primary-btn"
+        type="button">
+        Refresh Location
+    </button>
+
+    <button
+        id="startGpsButton"
+        type="button">
+        📍 Start GPS Tracking
+    </button>
+
+    <button
+        id="stopGpsButton"
+        type="button">
+        ⛔ Stop GPS Tracking
+    </button>
+
+</div>
+
+<p id="gpsStatus"></p>
+
+<!-- LIVE GPS MAP -->
+<div id="map"></div>
+
+
+        <!-- TRACKING CARD -->
+
+        <div class="tracking-card">
+
+
+            <div class="tracking-header">
+
+                <div>
+
+                    <p>
+                        Bus Number
+                    </p>
+
+                    <h2 id="trackingBusNumber">
+                        --
+                    </h2>
+
+                </div>
+
+
+                <div>
+
+                    <span
+                        id="trackingStatus"
+                        class="status">
+
+                        ● --
+
+                    </span>
+
+                </div>
+
             </div>
 
-            <div class="card">
-                <h3>📍 Live Tracking</h3>
-                <p>Track your bus location.</p>
+
+            <div class="tracking-location">
+
+                <p>
+                    Current Location
+                </p>
+
+                <h2 id="trackingLocation">
+                    --
+                </h2>
+
             </div>
 
-            <div class="card">
-                <h3>⏱ Bus Status</h3>
-                <p>Check bus arrival information.</p>
+
+            <div class="tracking-route">
+
+                <p>
+                    Route
+                </p>
+
+                <h3 id="trackingRoute">
+                    --
+                </h3>
+
             </div>
 
-        </section>
 
-    </main>
+            <div id="trackingResult"
+                 class="result-box">
+            </div>
 
-    <footer>
-        <p>© 2026 TrackMyBus Public Transit</p>
-    </footer>
 
-    <script src="script.js"></script>
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- ==================================================
+     BUS STATUS
+================================================== -->
+
+<section id="bus-status"
+         class="section">
+
+    <div class="container">
+
+        <h2>
+            Bus Status
+        </h2>
+
+        <p>
+            Current status of the available buses.
+        </p>
+
+
+        <div class="status-grid">
+
+
+            <div class="status-card">
+
+                <h3>
+                    On Time
+                </h3>
+
+                <h2 id="onTimeCount">
+                    0
+                </h2>
+
+            </div>
+
+
+            <div class="status-card">
+
+                <h3>
+                    Delayed
+                </h3>
+
+                <h2 id="delayedCount">
+                    0
+                </h2>
+
+            </div>
+
+
+            <div class="status-card">
+
+                <h3>
+                    Cancelled
+                </h3>
+
+                <h2 id="cancelledCount">
+                    0
+                </h2>
+
+            </div>
+
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- ==================================================
+     UPDATE LOCATION
+================================================== -->
+
+<section class="section">
+
+    <div class="container">
+
+        <h2>
+            Update Bus Location
+        </h2>
+
+        <p>
+            Update the current location of a bus.
+        </p>
+
+
+        <div class="form-box">
+
+            <input
+                type="text"
+                id="updateBusNumber"
+                placeholder="Bus number">
+
+
+            <input
+                type="text"
+                id="newLocation"
+                placeholder="New location">
+
+
+            <button
+                id="updateLocationButton"
+                class="primary-btn">
+
+                Update Location
+
+            </button>
+
+        </div>
+
+
+        <div id="updateResult"
+             class="result-box">
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- ==================================================
+     ADD BUS
+================================================== -->
+
+<section class="section">
+
+    <div class="container">
+
+        <h2>
+            Add New Bus
+        </h2>
+
+        <p>
+            Add a new bus to the system.
+        </p>
+
+
+        <div class="form-box">
+
+            <input
+                type="text"
+                id="addBusNumber"
+                placeholder="Bus number">
+
+
+            <input
+                type="text"
+                id="addRoute"
+                placeholder="Route">
+
+
+            <input
+                type="text"
+                id="addLocation"
+                placeholder="Current location">
+
+
+            <select id="addStatus">
+
+                <option value="">
+                    Select status
+                </option>
+
+                <option value="On Time">
+                    On Time
+                </option>
+
+                <option value="Delayed">
+                    Delayed
+                </option>
+
+                <option value="Cancelled">
+                    Cancelled
+                </option>
+
+            </select>
+
+
+            <button
+                id="addBusButton"
+                class="primary-btn">
+
+                Add Bus
+
+            </button>
+
+        </div>
+
+
+        <div id="addResult"
+             class="result-box">
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- ==================================================
+     LOGIN
+================================================== -->
+
+<section id="login"
+         class="section">
+
+    <div class="container">
+
+        <h2>
+            Login
+        </h2>
+
+        <p>
+            Demo login for TrackMyBus.
+        </p>
+
+
+        <div class="form-box">
+
+            <input
+                type="text"
+                id="username"
+                placeholder="Username">
+
+
+            <input
+                type="password"
+                id="password"
+                placeholder="Password">
+
+
+            <button
+                id="loginButton"
+                class="primary-btn">
+
+                Login
+
+            </button>
+
+        </div>
+
+
+        <div id="loginResult"
+             class="result-box">
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- ==================================================
+     FOOTER
+================================================== -->
+
+<footer>
+
+    <p>
+        © 2026 TrackMyBus Public Transit
+    </p>
+
+</footer>
+
+
+<!-- ==================================================
+     JAVASCRIPT
+================================================== -->
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="script.js?v=3"></script>
+
 
 </body>
+
 </html>

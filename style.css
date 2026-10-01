@@ -1,100 +1,652 @@
+/* =========================
+   GLOBAL
+========================= */
+
 * {
-    box-sizing: border-box;
     margin: 0;
     padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
 }
 
 body {
     font-family: Arial, sans-serif;
-    background-color: #f4f7f8;
-    color: #333;
+    background: #07111f;
+    color: #f5f7fa;
+    line-height: 1.6;
 }
 
-header {
-    background-color: #008c8c;
-    color: white;
-    padding: 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-nav a {
-    color: white;
+a {
     text-decoration: none;
-    margin-left: 20px;
-}
-
-main {
-    padding: 30px;
-}
-
-.hero {
-    background-color: white;
-    padding: 40px;
-    text-align: center;
-    border-radius: 10px;
-}
-
-.hero h2 {
-    margin-bottom: 10px;
+    color: inherit;
 }
 
 button {
-    background-color: #008c8c;
-    color: white;
     border: none;
-    padding: 10px 20px;
-    border-radius: 5px;
     cursor: pointer;
+    font-size: 15px;
 }
 
-.search {
-    background-color: white;
-    padding: 25px;
-    margin-top: 25px;
+
+/* =========================
+   NAVBAR
+========================= */
+
+.navbar {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    padding: 18px 7%;
+
+    background: rgba(7, 17, 31, 0.95);
+    border-bottom: 1px solid #1d3048;
+    backdrop-filter: blur(10px);
+}
+
+.logo {
+    font-size: 22px;
+    font-weight: bold;
+    color: #58a6ff;
+}
+
+.navbar nav {
+    display: flex;
+    gap: 28px;
+}
+
+.nav-link {
+    color: #b8c5d6;
+    transition: 0.3s;
+}
+
+.nav-link:hover,
+.nav-link.active {
+    color: #58a6ff;
+}
+
+
+/* =========================
+   SECTIONS
+========================= */
+
+.page-section {
+    min-height: 70vh;
+    padding: 90px 8%;
+    border-bottom: 1px solid #14263b;
+}
+
+.section-heading {
+    max-width: 700px;
+    margin-bottom: 40px;
+}
+
+.small-title {
+    color: #58a6ff;
+    font-size: 13px;
+    font-weight: bold;
+    letter-spacing: 2px;
+    margin-bottom: 10px;
+}
+
+.section-heading h2 {
+    font-size: 42px;
+    margin-bottom: 12px;
+}
+
+.section-heading p {
+    color: #9eacbd;
+}
+
+
+/* =========================
+   HOME
+========================= */
+
+.home-section {
+    min-height: 90vh;
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    gap: 60px;
+
+    background:
+        radial-gradient(
+            circle at 80% 30%,
+            rgba(35, 110, 190, 0.25),
+            transparent 35%
+        );
+}
+
+.hero-content {
+    max-width: 680px;
+}
+
+.hero-content h1 {
+    font-size: clamp(45px, 6vw, 78px);
+    line-height: 1.05;
+    margin-bottom: 25px;
+}
+
+.hero-content h1 span {
+    color: #58a6ff;
+}
+
+.hero-text {
+    color: #aebdce;
+    font-size: 18px;
+    max-width: 600px;
+    margin-bottom: 30px;
+}
+
+.hero-buttons {
+    display: flex;
+    gap: 15px;
+}
+
+.primary-btn,
+.secondary-btn {
+    padding: 13px 24px;
+    border-radius: 8px;
+    transition: 0.3s;
+}
+
+.primary-btn {
+    background: #2383d9;
+    color: white;
+}
+
+.primary-btn:hover {
+    background: #3998ed;
+    transform: translateY(-2px);
+}
+
+.secondary-btn {
+    background: transparent;
+    border: 1px solid #31506f;
+    color: #dce8f5;
+}
+
+.secondary-btn:hover {
+    border-color: #58a6ff;
+    color: #58a6ff;
+}
+
+.hero-card {
+    width: 300px;
+    padding: 35px;
+    border: 1px solid #27425f;
+    border-radius: 20px;
+    background: #0d1b2b;
     text-align: center;
-    border-radius: 10px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+}
+
+.bus-icon {
+    font-size: 70px;
+    margin-bottom: 15px;
+}
+
+.hero-card h3 {
+    font-size: 24px;
+}
+
+.hero-card p {
+    color: #94a7bb;
+}
+
+.hero-stat {
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid #24394f;
+}
+
+.hero-stat strong {
+    display: block;
+    color: #4fd18b;
+    font-size: 28px;
+}
+
+.hero-stat span {
+    color: #9eacbd;
+}
+
+
+/* =========================
+   SEARCH
+========================= */
+
+.search-section {
+    min-height: 60vh;
+}
+
+.search-box {
+    display: flex;
+    max-width: 700px;
+    gap: 10px;
 }
 
 input {
-    padding: 10px;
-    width: 250px;
-    margin: 10px;
+    width: 100%;
+    padding: 14px 16px;
+
+    background: #0d1b2b;
+    color: white;
+
+    border: 1px solid #2b425c;
+    border-radius: 8px;
+
+    outline: none;
 }
 
-.features {
+input:focus {
+    border-color: #58a6ff;
+}
+
+.search-box button,
+.form-card button,
+.login-card button {
+    padding: 14px 25px;
+    background: #2383d9;
+    color: white;
+    border-radius: 8px;
+}
+
+.result-card {
+    max-width: 700px;
+    margin-top: 25px;
+
+    padding: 25px;
+
+    background: #0d1b2b;
+    border: 1px solid #263e58;
+    border-radius: 12px;
+}
+
+
+/* =========================
+   ROUTES
+========================= */
+
+.route-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+
+.route-card {
+    padding: 25px;
+
+    background: #0d1b2b;
+    border: 1px solid #263e58;
+    border-radius: 15px;
+
+    transition: 0.3s;
+}
+
+.route-card:hover {
+    transform: translateY(-5px);
+    border-color: #58a6ff;
+}
+
+.route-number {
+    display: inline-block;
+
+    padding: 5px 10px;
+
+    border-radius: 6px;
+
+    background: #173a5d;
+    color: #58a6ff;
+
+    font-weight: bold;
+    margin-bottom: 15px;
+}
+
+.route-card h3 {
+    margin-bottom: 8px;
+}
+
+.route-card p {
+    color: #91a3b7;
+}
+
+
+/* =========================
+   STATUS
+========================= */
+
+.status {
+    display: inline-block;
+    margin-top: 15px;
+    font-size: 14px;
+}
+
+.on-time {
+    color: #4fd18b;
+}
+
+.delayed {
+    color: #f5bd4f;
+}
+
+.status-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 20px;
-    margin-top: 25px;
 }
 
-.card {
-    background-color: white;
-    padding: 25px;
-    border-radius: 10px;
-    text-align: center;
+.status-summary {
+    padding: 30px;
+    background: #0d1b2b;
+    border: 1px solid #263e58;
+    border-radius: 15px;
 }
+
+.status-summary strong {
+    display: block;
+    font-size: 45px;
+    margin: 10px 0;
+}
+
+.status-summary p {
+    color: #8fa2b7;
+}
+
+.on-time-box strong {
+    color: #4fd18b;
+}
+
+.delayed-box strong {
+    color: #f5bd4f;
+}
+
+.cancelled-box strong {
+    color: #f05d6c;
+}
+
+
+/* =========================
+   LIVE TRACKING
+========================= */
+
+.tracking-section {
+    background: #081522;
+}
+
+.tracking-container {
+    max-width: 800px;
+}
+
+.tracking-card {
+    padding: 35px;
+
+    background: #0d1b2b;
+    border: 1px solid #294560;
+    border-radius: 20px;
+}
+
+.tracking-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    padding-bottom: 25px;
+    border-bottom: 1px solid #24394f;
+}
+
+.label {
+    color: #71859b;
+    font-size: 12px;
+    letter-spacing: 1px;
+}
+
+.location-display {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+
+    padding: 35px 0;
+}
+
+.location-icon {
+    width: 60px;
+    height: 60px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+    background: #173a5d;
+
+    font-size: 25px;
+}
+
+.location-display h2 {
+    color: #58a6ff;
+}
+
+.route-line {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+
+    color: #a7b6c7;
+
+    margin-bottom: 30px;
+}
+
+.line {
+    height: 2px;
+    flex: 1;
+    background: #31506f;
+}
+
+
+/* =========================
+   FORMS
+========================= */
+
+.form-card {
+    max-width: 700px;
+
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+
+    padding: 30px;
+
+    background: #0d1b2b;
+    border: 1px solid #263e58;
+    border-radius: 15px;
+}
+
+.form-card button {
+    grid-column: span 2;
+}
+
+#updateResult,
+#addResult,
+#loginResult {
+    grid-column: span 2;
+}
+
+
+/* =========================
+   LOGIN
+========================= */
+
+.login-section {
+    min-height: 70vh;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.login-card {
+    width: 400px;
+
+    padding: 40px;
+
+    background: #0d1b2b;
+    border: 1px solid #294560;
+    border-radius: 18px;
+}
+
+.login-card h2 {
+    font-size: 35px;
+    margin-bottom: 10px;
+}
+
+.login-card p {
+    color: #94a7bb;
+    margin-bottom: 25px;
+}
+
+.login-card input {
+    margin-bottom: 15px;
+}
+
+.login-card button {
+    width: 100%;
+}
+
+
+/* =========================
+   FOOTER
+========================= */
 
 footer {
+    padding: 40px 8%;
     text-align: center;
-    padding: 20px;
-    margin-top: 30px;
+
+    background: #050c15;
+
+    color: #8fa2b7;
 }
 
-@media (max-width: 700px) {
+footer h3 {
+    color: #58a6ff;
+    margin-bottom: 10px;
+}
 
-    header {
+.copyright {
+    margin-top: 15px;
+    font-size: 13px;
+}
+
+
+/* =========================
+   MOBILE
+========================= */
+
+@media (max-width: 800px) {
+
+    .navbar {
         flex-direction: column;
         gap: 15px;
     }
 
-    .features {
+    .navbar nav {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 15px;
+    }
+
+    .home-section {
+        flex-direction: column;
+        text-align: center;
+        padding-top: 70px;
+    }
+
+    .hero-buttons {
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .hero-card {
+        width: 100%;
+        max-width: 350px;
+    }
+
+    .route-grid,
+    .status-grid {
         grid-template-columns: 1fr;
     }
 
-    input {
-        width: 80%;
+    .search-box {
+        flex-direction: column;
     }
+
+    .form-card {
+        grid-template-columns: 1fr;
+    }
+
+    .form-card button,
+    #updateResult,
+    #addResult,
+    #loginResult {
+        grid-column: span 1;
+    }
+
+    .section-heading h2 {
+        font-size: 34px;
+    }
+
+}
+/* ======================================================
+   LIVE GPS MAP
+   ====================================================== */
+
+#map {
+    width: 100%;
+    height: 400px;
+    margin-top: 20px;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+/* Custom Bus Marker */
+.custom-bus-marker {
+    background: transparent;
+    border: none;
+    font-size: 32px;
+    text-align: center;
+    line-height: 40px;
+}
+/* ======================================================
+   FIX LIVE GPS MAP LAYOUT
+====================================================== */
+
+#map {
+    width: 100% !important;
+    height: 400px !important;
+    min-height: 400px !important;
+    display: block !important;
+    position: relative !important;
+    z-index: 1;
+    margin-top: 20px;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.leaflet-container {
+    width: 100% !important;
+    height: 400px !important;
+    min-height: 400px !important;
+}
+
+.search-box {
+    align-items: center;
 }
