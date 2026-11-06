@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <title>Driver Panel | TrackMyBus</title>
 
@@ -16,7 +17,7 @@
 
         body {
             font-family: Arial, sans-serif;
-            background: #f4f7fb;
+            background: #f1f5f9;
             color: #1e293b;
         }
 
@@ -27,6 +28,8 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
         }
 
         .logo {
@@ -37,7 +40,7 @@
         nav a {
             color: white;
             text-decoration: none;
-            margin-left: 25px;
+            margin-left: 20px;
         }
 
         nav a:hover {
@@ -45,16 +48,16 @@
         }
 
         .container {
-            width: 86%;
+            width: 90%;
             max-width: 800px;
-            margin: 40px auto;
+            margin: 35px auto;
         }
 
         .card {
             background: white;
-            padding: 30px;
+            padding: 28px;
             border-radius: 14px;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.07);
         }
 
         h1 {
@@ -63,13 +66,13 @@
 
         .subtitle {
             color: #64748b;
-            margin-bottom: 25px;
+            margin-bottom: 24px;
+            line-height: 1.6;
         }
 
         label {
             display: block;
-            margin-top: 18px;
-            margin-bottom: 7px;
+            margin: 18px 0 7px;
             font-weight: bold;
         }
 
@@ -79,53 +82,96 @@
             border: 1px solid #cbd5e1;
             border-radius: 7px;
             font-size: 16px;
+            background: #f8fafc;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
         }
 
         button {
-            margin-top: 25px;
-            padding: 13px 22px;
-            background: #2563eb;
-            color: white;
+            margin-top: 20px;
+            padding: 13px 20px;
             border: none;
             border-radius: 7px;
             cursor: pointer;
-            font-size: 16px;
+            font-size: 15px;
+            font-weight: bold;
+            color: white;
+            background: #2563eb;
         }
 
-        button:hover {
-            background: #1d4ed8;
+        #stopButton {
+            background: #dc2626;
         }
 
         button:disabled {
-            background: #94a3b8;
+            opacity: 0.5;
             cursor: not-allowed;
         }
 
+        .gps-status,
         .location-box {
-            margin-top: 25px;
+            margin-top: 22px;
             padding: 18px;
-            background: #eff6ff;
             border-radius: 10px;
         }
 
+        .gps-status {
+            background: #eff6ff;
+            overflow-wrap: anywhere;
+        }
+
+        .location-box {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+        }
+
+        .location-box h3 {
+            margin-bottom: 12px;
+        }
+
         .location-box p {
-            margin: 8px 0;
+            margin: 10px 0;
+            overflow-wrap: anywhere;
         }
 
         .message {
-            margin-top: 20px;
-            font-weight: bold;
+            margin-top: 18px;
+            line-height: 1.6;
+            overflow-wrap: anywhere;
         }
 
-        .gps-status {
-            margin-top: 20px;
-            padding: 15px;
-            background: #f8fafc;
-            border-radius: 8px;
+        .note {
+            margin-top: 15px;
+            color: #64748b;
+            font-size: 13px;
+            line-height: 1.6;
         }
 
-        .gps-status span {
-            font-weight: bold;
+        @media (max-width: 500px) {
+            .card {
+                padding: 20px;
+            }
+
+            nav {
+                padding: 16px 5%;
+            }
+
+            nav a {
+                margin-left: 10px;
+            }
+
+            .container {
+                width: 92%;
+                margin: 20px auto;
+            }
+
+            .buttons button {
+                flex: 1;
+            }
         }
     </style>
 </head>
@@ -133,399 +179,306 @@
 <body>
 
 <nav>
-
-    <div class="logo">
-        🚌 TrackMyBus
-    </div>
+    <div class="logo">🚌 TrackMyBus</div>
 
     <div>
-        <a href="/welcome">Home</a>
+        <a href="/">Home</a>
         <a href="/tracking">Live Tracking</a>
     </div>
-
 </nav>
 
-
 <div class="container">
-
     <div class="card">
 
         <h1>Driver Panel</h1>
 
         <p class="subtitle">
-            Share your live GPS location with TrackMyBus.
+            Share your device's GPS location for your assigned bus.
         </p>
 
-
-        <label for="busNumber">
-            Bus Number
-        </label>
+        <label for="busNumber">Assigned Bus Number</label>
 
         <input
-    type="text"
-    id="busNumber"
-    value="{{ auth()->user()->bus_number }}"
-    placeholder="Assigned bus number"
-    readonly
->
-
-
-        <button
-            id="startButton"
-            onclick="startTracking()"
+            type="text"
+            id="busNumber"
+            value="{{ auth()->user()->bus_number }}"
+            placeholder="No bus assigned"
+            readonly
         >
-            Start GPS Tracking
-        </button>
 
+        <div class="buttons">
+            <button id="startButton" type="button">
+                Start GPS Tracking
+            </button>
 
-        <button
-            id="stopButton"
-            onclick="stopTracking()"
-            disabled
-        >
-            Stop Tracking
-        </button>
-
-
-        <div class="gps-status">
-
-            GPS Status:
-            <span id="gpsStatus">
-                Not started
-            </span>
-
+            <button id="stopButton" type="button" disabled>
+                Stop Tracking
+            </button>
         </div>
 
+        <div class="gps-status">
+            GPS Status:
+            <strong id="gpsStatus" role="status" aria-live="polite">
+                Not started
+            </strong>
+        </div>
 
         <div class="location-box">
-
-            <h3>
-                Current Location
-            </h3>
+            <h3>Current Location</h3>
 
             <p>
                 Latitude:
-                <strong id="latitude">
-                    Waiting...
-                </strong>
+                <strong id="latitude">Waiting...</strong>
             </p>
 
             <p>
                 Longitude:
-                <strong id="longitude">
-                    Waiting...
-                </strong>
+                <strong id="longitude">Waiting...</strong>
             </p>
 
             <p>
-                Last Update:
-                <strong id="lastUpdate">
-                    Waiting...
-                </strong>
+                Last Successful Update:
+                <strong id="lastUpdate">Waiting...</strong>
             </p>
-
         </div>
 
+        <div id="message" class="message" role="status" aria-live="polite"></div>
 
-        <div
-            id="message"
-            class="message">
-        </div>
+        <p class="note">
+            Keep this page open while tracking. GPS tracking requires location
+            permission and a secure browser context (HTTPS or localhost).
+            Stop tracking when you finish.
+        </p>
 
     </div>
-
 </div>
 
-
 <script>
+    const busInput = document.getElementById('busNumber');
+    const startButton = document.getElementById('startButton');
+    const stopButton = document.getElementById('stopButton');
+    const gpsStatus = document.getElementById('gpsStatus');
+    const message = document.getElementById('message');
 
-let trackingInterval = null;
+    let watchId = null;
+    let lastSentAt = 0;
+    let sendingLocation = false;
+    let trackingActive = false;
 
-let currentLatitude = null;
-let currentLongitude = null;
+    // Avoid sending too many requests: send at most once every 5 seconds.
+    const MIN_UPDATE_INTERVAL = 5000;
 
-
-// Start GPS tracking
-async function startTracking() {
-
-    const busNumber =
-        document.getElementById('busNumber').value.trim();
-
-    const message =
-        document.getElementById('message');
-
-    const gpsStatus =
-        document.getElementById('gpsStatus');
-
-
-    if (!busNumber) {
-
-        message.textContent =
-            '❌ Please enter a bus number.';
-
-        return;
+    function setMessage(text) {
+        message.textContent = text;
     }
 
+    function setStatus(text) {
+        gpsStatus.textContent = text;
+    }
 
-    // Check whether the bus exists
-    try {
-
-        gpsStatus.textContent =
-            'Checking bus number...';
-
-        const response =
-            await fetch(`/api/buses/${busNumber}`);
-
-        const data =
-            await response.json();
-
-
-        if (!response.ok) {
-
-            throw new Error(
-                data.message ||
-                'Bus not found.'
-            );
+    async function sendLocation(latitude, longitude) {
+        if (!trackingActive || sendingLocation) {
+            return;
         }
 
-
-    } catch (error) {
-
-        gpsStatus.textContent =
-            'Bus not found';
-
-        message.textContent =
-            '❌ ' + error.message;
-
-        return;
-    }
-
-
-    // Check browser GPS support
-    if (!navigator.geolocation) {
-
-        message.textContent =
-            '❌ GPS is not supported by this browser.';
-
-        return;
-    }
-
-
-    gpsStatus.textContent =
-        'Requesting GPS permission...';
-
-
-    // Get location immediately
-    updateGPSLocation();
-
-
-    // Update every 30 seconds
-    trackingInterval = setInterval(
-        updateGPSLocation,
-        30000
-    );
-
-
-    document.getElementById('startButton')
-        .disabled = true;
-
-    document.getElementById('stopButton')
-        .disabled = false;
-
-
-    gpsStatus.textContent =
-        'Tracking every 30 seconds';
-
-}
-
-
-// Stop GPS tracking
-function stopTracking() {
-
-    if (trackingInterval) {
-
-        clearInterval(trackingInterval);
-
-        trackingInterval = null;
-    }
-
-
-    document.getElementById('startButton')
-        .disabled = false;
-
-    document.getElementById('stopButton')
-        .disabled = true;
-
-
-    document.getElementById('gpsStatus')
-        .textContent =
-        'Tracking stopped';
-
-
-    document.getElementById('message')
-        .textContent =
-        '⏹ GPS tracking stopped.';
-}
-
-
-// Get driver's GPS location
-function updateGPSLocation() {
-
-    const busNumber =
-        document.getElementById('busNumber').value.trim();
-
-
-    const message =
-        document.getElementById('message');
-
-
-    if (!busNumber) {
-
-        message.textContent =
-            '❌ Please enter a bus number.';
-
-        return;
-    }
-
-
-    navigator.geolocation.getCurrentPosition(
-
-        async (position) => {
-
-            currentLatitude =
-                position.coords.latitude;
-
-            currentLongitude =
-                position.coords.longitude;
-
-
-            // Display GPS coordinates
-            document.getElementById('latitude')
-                .textContent =
-                currentLatitude.toFixed(6);
-
-
-            document.getElementById('longitude')
-                .textContent =
-                currentLongitude.toFixed(6);
-
-
-            try {
-
-                const response =
-                    await fetch(
-                        `/api/buses/${busNumber}/location`,
-                        {
-                            method: 'PUT',
-
-                            headers: {
-                                'Content-Type':
-                                    'application/json',
-
-                                'Accept':
-                                    'application/json'
-                            },
-
-                            body: JSON.stringify({
-
-                                latitude:
-                                    currentLatitude,
-
-                                longitude:
-                                    currentLongitude
-
-                            })
-                        }
-                    );
-
-
-                const data =
-                    await response.json();
-
-
-                if (!response.ok) {
-
-                    throw new Error(
-                        data.message ||
-                        'Location update failed.'
-                    );
+        const busNumber = busInput.value.trim();
+
+        if (!busNumber) {
+            setStatus('No bus assigned');
+            setMessage('Your account does not have an assigned bus. Contact the administrator.');
+            stopTracking();
+            return;
+        }
+
+        sendingLocation = true;
+
+        try {
+            const response = await fetch(
+                `/api/buses/${encodeURIComponent(busNumber)}/location`,
+                {
+                    method: 'PUT',
+                    credentials: 'same-origin',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN':
+                            document.querySelector('meta[name="csrf-token"]').content
+                    },
+                    body: JSON.stringify({
+                        latitude: latitude,
+                        longitude: longitude
+                    })
+                }
+            );
+
+            const data = await response.json().catch(() => ({}));
+
+            if (!response.ok) {
+                if (response.status === 401 || response.status === 419) {
+                    throw new Error('Your session may have expired. Please log in again.');
                 }
 
+                if (response.status === 403) {
+                    throw new Error('Permission denied. Check your driver account and assigned bus.');
+                }
 
-                document.getElementById('lastUpdate')
-                    .textContent =
-                    new Date().toLocaleTimeString();
-
-
-                document.getElementById('gpsStatus')
-                    .textContent =
-                    'GPS location sent successfully';
-
-
-                message.textContent =
-                    '✅ Bus location updated successfully!';
-
-
-            } catch (error) {
-
-                message.textContent =
-                    '❌ ' + error.message;
-
+                throw new Error(data.message || `Location update failed (${response.status}).`);
             }
 
-        },
+            lastSentAt = Date.now();
 
+            document.getElementById('latitude').textContent =
+                Number(latitude).toFixed(6);
 
-        (error) => {
+            document.getElementById('longitude').textContent =
+                Number(longitude).toFixed(6);
 
-            let errorMessage =
-                'Unable to get GPS location.';
+            document.getElementById('lastUpdate').textContent =
+                new Date().toLocaleTimeString();
 
+            setStatus(`Connected — Bus ${busNumber}`);
+            setMessage(`✅ GPS location sent successfully for Bus ${busNumber}.`);
 
-            if (error.code === 1) {
+        } catch (error) {
+            setStatus('Location update failed');
+            setMessage(`❌ ${error.message}`);
+        } finally {
+            sendingLocation = false;
+        }
+    }
 
-                errorMessage =
-                    '❌ Location permission denied. Please allow location access.';
-
-            } else if (error.code === 2) {
-
-                errorMessage =
-                    '❌ GPS location is unavailable.';
-
-            } else if (error.code === 3) {
-
-                errorMessage =
-                    '❌ GPS request timed out.';
-
-            }
-
-
-            document.getElementById('gpsStatus')
-                .textContent =
-                'GPS error';
-
-
-            document.getElementById('message')
-                .textContent =
-                errorMessage;
-
-        },
-
-
-        {
-            enableHighAccuracy: true,
-
-            timeout: 10000,
-
-            maximumAge: 0
+    function handlePosition(position) {
+        if (!trackingActive) {
+            return;
         }
 
-    );
+        const now = Date.now();
 
-}
+        if (now - lastSentAt < MIN_UPDATE_INTERVAL) {
+            return;
+        }
 
+        sendLocation(
+            position.coords.latitude,
+            position.coords.longitude
+        );
+    }
+
+    function handleLocationError(error) {
+        if (!trackingActive) {
+            return;
+        }
+
+        let errorMessage = 'Unable to get your GPS location.';
+
+        if (error.code === 1) {
+            errorMessage = 'Location permission denied. Allow location access in your browser.';
+        } else if (error.code === 2) {
+            errorMessage = 'Your device could not determine its current location.';
+        } else if (error.code === 3) {
+            errorMessage = 'GPS request timed out. Move to an area with a better GPS signal.';
+        }
+
+        setStatus('GPS error');
+        setMessage(`❌ ${errorMessage}`);
+    }
+
+    function stopTracking() {
+        trackingActive = false;
+
+        if (watchId !== null) {
+            navigator.geolocation.clearWatch(watchId);
+            watchId = null;
+        }
+
+        startButton.disabled = false;
+        stopButton.disabled = true;
+
+        setStatus('Tracking stopped');
+        setMessage('⏹ GPS tracking stopped.');
+    }
+
+    async function startTracking() {
+        if (trackingActive) {
+            return;
+        }
+
+        const busNumber = busInput.value.trim();
+
+        if (!busNumber) {
+            setStatus('No bus assigned');
+            setMessage('❌ No bus is assigned to your account. Ask the administrator to assign one.');
+            return;
+        }
+
+        if (!navigator.geolocation) {
+            setStatus('GPS unavailable');
+            setMessage('❌ This browser does not support geolocation.');
+            return;
+        }
+
+        startButton.disabled = true;
+        setStatus('Checking assigned bus...');
+        setMessage('');
+
+        try {
+            const response = await fetch(
+                `/api/buses/${encodeURIComponent(busNumber)}`,
+                {
+                    headers: {
+                        'Accept': 'application/json'
+                    },
+                    credentials: 'same-origin'
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error(
+                    response.status === 404
+                        ? `Bus ${busNumber} was not found.`
+                        : `Could not verify bus (${response.status}).`
+                );
+            }
+
+            trackingActive = true;
+            lastSentAt = 0;
+
+            setStatus('Waiting for GPS location...');
+            setMessage(`Starting GPS tracking for Bus ${busNumber}.`);
+
+            stopButton.disabled = false;
+
+            watchId = navigator.geolocation.watchPosition(
+                handlePosition,
+                handleLocationError,
+                {
+                    enableHighAccuracy: true,
+                    timeout: 15000,
+                    maximumAge: 0
+                }
+            );
+
+        } catch (error) {
+            trackingActive = false;
+            startButton.disabled = false;
+            stopButton.disabled = true;
+
+            setStatus('Unable to start');
+            setMessage(`❌ ${error.message}`);
+        }
+    }
+
+    startButton.addEventListener('click', startTracking);
+    stopButton.addEventListener('click', stopTracking);
+
+    // Stop browser GPS monitoring when leaving the page.
+    window.addEventListener('pagehide', () => {
+        if (watchId !== null) {
+            navigator.geolocation.clearWatch(watchId);
+        }
+    });
 </script>
 
 </body>
-
 </html>

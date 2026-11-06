@@ -5,21 +5,18 @@ namespace App\Http\Controllers;
 use App\Models\Bus;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class BusController extends Controller
 {
-    // Get all buses
+    // Get all buses with their assigned drivers
     public function index()
     {
-        $buses = Bus::all();
+        $buses = Bus::with('driver')->get();
 
         foreach ($buses as $bus) {
-            $driver = User::where('role', 'driver')
-                ->where('bus_number', $bus->bus_number)
-                ->first();
-
-            $bus->driver_name = $driver?->name;
-            $bus->driver_email = $driver?->email;
+            $bus->driver_name = $bus->driver?->name;
+            $bus->driver_email = $bus->driver?->email;
         }
 
         return response()->json($buses);
@@ -32,7 +29,7 @@ class BusController extends Controller
 
         if (!$bus) {
             return response()->json([
-                'message' => 'Bus not found'
+                'message' => 'Bus not found',
             ], 404);
         }
 
@@ -46,10 +43,10 @@ class BusController extends Controller
         ) {
             $earthRadius = 6371;
 
-            $lat1 = deg2rad($bus->latitude);
-            $lon1 = deg2rad($bus->longitude);
-            $lat2 = deg2rad($bus->destination_latitude);
-            $lon2 = deg2rad($bus->destination_longitude);
+            $lat1 = deg2rad((float) $bus->latitude);
+            $lon1 = deg2rad((float) $bus->longitude);
+            $lat2 = deg2rad((float) $bus->destination_latitude);
+            $lon2 = deg2rad((float) $bus->destination_longitude);
 
             $dLat = $lat2 - $lat1;
             $dLon = $lon2 - $lon1;
@@ -58,19 +55,12 @@ class BusController extends Controller
                 + cos($lat1) * cos($lat2)
                 * sin($dLon / 2) ** 2;
 
-            $c = 2 * atan2(
-                sqrt($a),
-                sqrt(1 - $a)
-            );
+            $a = max(0, min(1, $a));
+
+            $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
 
             $distanceKm = $earthRadius * $c;
-
-            // Assume average bus speed of 30 km/h
-            $etaMinutes = round(($distanceKm / 30) * 60);
-
-            if ($etaMinutes < 1) {
-                $etaMinutes = 1;
-            }
+            $etaMinutes = max(1, (int) round(($distanceKm / 30) * 60));
         }
 
         return response()->json([
@@ -91,13 +81,13 @@ class BusController extends Controller
     public function store(Request $request)
     {
         $validatedData = $request->validate([
-            'bus_number' => 'required|unique:buses',
-            'route' => 'required',
-            'status' => 'nullable',
-            'latitude' => 'nullable|numeric',
-            'longitude' => 'nullable|numeric',
-            'destination_latitude' => 'nullable|numeric',
-            'destination_longitude' => 'nullable|numeric',
+            'bus_number' => 'required|string|unique:buses,bus_number',
+            'route' => 'required|string',
+            'status' => 'nullable|in:On Time,Delayed',
+            'latitude' => 'nullable|numeric|between:-90,90',
+            'longitude' => 'nullable|numeric|between:-180,180',
+            'destination_latitude' => 'nullable|numeric|between:-90,90',
+            'destination_longitude' => 'nullable|numeric|between:-180,180',
         ]);
 
         $bus = Bus::create($validatedData);
@@ -112,35 +102,37 @@ class BusController extends Controller
 
         if (!$bus) {
             return response()->json([
-                'message' => 'Bus not found'
+                'message' => 'Bus not found',
             ], 404);
         }
 
         $validatedData = $request->validate([
-            'route' => 'required',
+            'route' => 'required|string',
             'status' => 'required|in:On Time,Delayed',
-            'destination_latitude' => 'nullable|numeric',
-            'destination_longitude' => 'nullable|numeric',
+            'destination_latitude' => 'nullable|numeric|between:-90,90',
+            'destination_longitude' => 'nullable|numeric|between:-180,180',
         ]);
 
         $bus->update($validatedData);
 
         return response()->json([
             'message' => 'Bus updated successfully',
-            'bus' => $bus
+            'bus' => $bus,
         ]);
     }
 
     // Update bus location from driver GPS
     public function updateLocation(Request $request, $bus_number)
     {
-        // Make sure the driver can update only their assigned bus
+        $user = $request->user();
+
         if (
-            auth()->user()->role === 'driver' &&
-            auth()->user()->bus_number !== $bus_number
+            $user &&
+            $user->role === 'driver' &&
+            $user->bus_number !== $bus_number
         ) {
             return response()->json([
-                'message' => 'You are not assigned to this bus.'
+                'message' => 'You are not assigned to this bus.',
             ], 403);
         }
 
@@ -148,18 +140,19 @@ class BusController extends Controller
 
         if (!$bus) {
             return response()->json([
-                'message' => 'Bus not found'
+                'message' => 'Bus not found',
             ], 404);
         }
 
         $validatedData = $request->validate([
-            'latitude' => 'required|numeric',
-            'longitude' => 'required|numeric',
+            'latitude' => 'required|numeric|between:-90,90',
+            'longitude' => 'required|numeric|between:-180,180',
         ]);
 
-        $bus->update(array_merge($validatedData, [
+        $bus->update([
+            ...$validatedData,
             'location_updated_at' => now(),
-        ]));
+        ]);
 
         return response()->json($bus);
     }
@@ -171,12 +164,12 @@ class BusController extends Controller
 
         if (!$bus) {
             return response()->json([
-                'message' => 'Bus not found'
+                'message' => 'Bus not found',
             ], 404);
         }
 
         $validatedData = $request->validate([
-            'driver_id' => 'required|exists:users,id',
+            'driver_id' => 'required|integer|exists:users,id',
         ]);
 
         $driver = User::where('id', $validatedData['driver_id'])
@@ -185,21 +178,29 @@ class BusController extends Controller
 
         if (!$driver) {
             return response()->json([
-                'message' => 'Selected user is not a driver.'
+                'message' => 'Selected user is not a driver.',
             ], 422);
         }
 
-        // Remove this bus assignment from any other driver
-        User::where('role', 'driver')
-            ->where('bus_number', $bus_number)
-            ->update([
-                'bus_number' => null
-            ]);
+        DB::transaction(function () use ($bus, $driver) {
+            // Release any other bus assigned to this driver.
+            Bus::where('driver_id', $driver->id)
+                ->where('id', '!=', $bus->id)
+                ->update(['driver_id' => null]);
 
-        // Assign the selected driver
-        $driver->update([
-            'bus_number' => $bus_number
-        ]);
+            // Release any other driver assigned to this bus.
+            User::where('role', 'driver')
+                ->where('bus_number', $bus->bus_number)
+                ->where('id', '!=', $driver->id)
+                ->update(['bus_number' => null]);
+
+            // Synchronize both assignment fields.
+            $bus->driver_id = $driver->id;
+            $bus->save();
+
+            $driver->bus_number = $bus->bus_number;
+            $driver->save();
+        });
 
         return response()->json([
             'message' => 'Driver assigned successfully',
@@ -207,8 +208,8 @@ class BusController extends Controller
                 'id' => $driver->id,
                 'name' => $driver->name,
                 'email' => $driver->email,
-                'bus_number' => $driver->bus_number,
-            ]
+                'bus_number' => $bus->bus_number,
+            ],
         ]);
     }
 
@@ -219,14 +220,19 @@ class BusController extends Controller
 
         if (!$bus) {
             return response()->json([
-                'message' => 'Bus not found'
+                'message' => 'Bus not found',
             ], 404);
         }
+
+        // Clear the driver's assignment before deleting the bus.
+        User::where('role', 'driver')
+            ->where('bus_number', $bus->bus_number)
+            ->update(['bus_number' => null]);
 
         $bus->delete();
 
         return response()->json([
-            'message' => 'Bus deleted successfully'
+            'message' => 'Bus deleted successfully',
         ]);
     }
 }
